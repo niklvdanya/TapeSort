@@ -6,11 +6,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include)
 
-add_executable(tape_sort 
+set(SOURCES
+    src/tape/config.cpp
+    src/tape/file_tape.cpp
+    src/sorting/sorter.cpp
+    src/utils/tape_utils.cpp
+    src/app/command_factory.cpp
+    src/app/commands.cpp
     src/main.cpp
-    src/file_tape.cpp
-    src/sorter.cpp
 )
+
+add_executable(tape_sort ${SOURCES})
 
 find_package(Threads REQUIRED)
 target_link_libraries(tape_sort PRIVATE Threads::Threads)
@@ -20,4 +26,5 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tmp)
-file(COPY ${CMAKE_SOURCE_DIR}/config/tape_config.txt DESTINATION ${CMAKE_BINARY_DIR})
+
+file(COPY ${CMAKE_SOURCE_DIR}/config/tape_config.txt DESTINATION ${CMAKE_BINARY_DIR}/config)

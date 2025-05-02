@@ -1,28 +1,32 @@
-#include "sorter.h"
+#include "sorting/sorter.h"
+#include "tape/file_tape.h"
 #include <vector>
 #include <algorithm>
 #include <fstream>
 #include <filesystem>
 #include <queue>
 #include <iostream>
+#include <chrono>
 
-TapeSorter::TapeSorter(size_t memoryLimit, const TapeConfig& config, const std::string& tempDir) 
-    : memoryLimit(memoryLimit), config(config), tempDir(tempDir) {
+namespace sorting {
+
+TapeSorter::TapeSorter(size_t memoryLimit, const tape::Config& config, std::string tempDir) 
+    : memoryLimit_(memoryLimit), config_(config), tempDir_(std::move(tempDir)) {
     
-    if (!std::filesystem::exists(tempDir)) {
-        std::filesystem::create_directory(tempDir);
+    if (!std::filesystem::exists(tempDir_)) {
+        std::filesystem::create_directory(tempDir_);
     }
 }
 
-std::vector<std::string> TapeSorter::splitIntoChunks(ITape& inputTape) {
+std::vector<std::string> TapeSorter::splitIntoChunks(tape::ITape& inputTape) {
     std::vector<std::string> chunkFiles;
-    size_t elementsInMemory = memoryLimit / sizeof(int32_t);
+    size_t elementsInMemory = memoryLimit_ / sizeof(int32_t);
     
     if (elementsInMemory == 0) {
         elementsInMemory = 1;
     }
     
-    std::cout << "Memory limit: " << memoryLimit << " bytes (" << elementsInMemory << " elements)" << std::endl;
+    std::cout << "Memory limit: " << memoryLimit_ << " bytes (" << elementsInMemory << " elements)" << std::endl;
     
     inputTape.rewind();
     
@@ -42,10 +46,10 @@ std::vector<std::string> TapeSorter::splitIntoChunks(ITape& inputTape) {
         std::cout << "Sorting chunk " << chunkIndex << " with " << buffer.size() << " elements" << std::endl;
         std::sort(buffer.begin(), buffer.end());
         
-        std::string chunkFilename = tempDir + "/chunk_" + std::to_string(chunkIndex++) + ".bin";
+        std::string chunkFilename = tempDir_ + "/chunk_" + std::to_string(chunkIndex++) + ".bin";
         chunkFiles.push_back(chunkFilename);
         
-        auto chunkTape = FileTape::createEmpty(chunkFilename, config);
+        auto chunkTape = tape::FileTape::createEmpty(chunkFilename, config_);
         for (const auto& value : buffer) {
             chunkTape->write(value);
             chunkTape->moveNext();
@@ -58,15 +62,16 @@ std::vector<std::string> TapeSorter::splitIntoChunks(ITape& inputTape) {
     return chunkFiles;
 }
 
-void TapeSorter::mergeChunks(const std::vector<std::string>& chunkFiles, ITape& outputTape) {
+void TapeSorter::mergeChunks(const std::vector<std::string>& chunkFiles, tape::ITape& outputTape) {
     if (chunkFiles.empty()) return;
     
     std::cout << "Merging " << chunkFiles.size() << " chunks..." << std::endl;
     
-    std::vector<std::unique_ptr<FileTape>> tapes;
+    std::vector<std::unique_ptr<tape::FileTape>> tapes;
+    tapes.reserve(chunkFiles.size());
     
     for (const auto& filename : chunkFiles) {
-        tapes.push_back(std::make_unique<FileTape>(filename, config));
+        tapes.push_back(tape::FileTape::createEmpty(filename, config_));
         tapes.back()->rewind();
     }
     
@@ -111,17 +116,13 @@ void TapeSorter::mergeChunks(const std::vector<std::string>& chunkFiles, ITape& 
     }
     
     std::cout << "Total elements merged: " << elementsMerged << std::endl;
-    
-    for (const auto& filename : chunkFiles) {
-        std::filesystem::remove(filename);
-    }
-    
-    std::cout << "Temporary files cleaned up" << std::endl;
 }
 
-void TapeSorter::sort(ITape& inputTape, ITape& outputTape) {
+void TapeSorter::sort(tape::ITape& inputTape, tape::ITape& outputTape) {
     std::cout << "Starting sort operation..." << std::endl;
-    auto startTime = std::chrono::high_resolution_clock::now();  
+    
+    auto startTime = std::chrono::high_resolution_clock::now();
+    
     auto chunkFiles = splitIntoChunks(inputTape);
     
     auto splitTime = std::chrono::high_resolution_clock::now();
@@ -135,5 +136,8 @@ void TapeSorter::sort(ITape& inputTape, ITape& outputTape) {
     auto totalDuration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
     
     std::cout << "Merge phase completed in " << mergeDuration.count() << " ms" << std::endl;
+    
     std::cout << "Total sort time: " << totalDuration.count() << " ms" << std::endl;
 }
+
+} // namespace sorting
