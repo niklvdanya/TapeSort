@@ -1,8 +1,9 @@
 #include "app/command_factory.h"
+
 #include <iostream>
-#include <vector>
-#include <string>
 #include <set>
+#include <string>
+#include <vector>
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -10,27 +11,26 @@ int main(int argc, char* argv[]) {
         std::cerr << "Run 'help' for available commands" << std::endl;
         return 1;
     }
-    
+
     app::CommandFactory factory;
     std::string commandName = argv[1];
     std::vector<std::string> args;
-    
-    static const std::set<std::string> validCommands = {
-        "sort", "generate", "print", "validate", "help"
-    };
+
+    static const std::set<std::string> validCommands = {"sort", "generate", "print", "validate",
+                                                        "help"};
 
     if (validCommands.find(commandName) == validCommands.end()) {
-        args.push_back(commandName); 
+        args.push_back(commandName);
         for (int i = 2; i < argc; ++i) {
             args.push_back(argv[i]);
         }
-        commandName = "sort"; 
+        commandName = "sort";
     } else {
         for (int i = 2; i < argc; ++i) {
             args.push_back(argv[i]);
         }
     }
-    
+
     auto command = factory.createCommand(commandName, args);
     if (command) {
         try {
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
             return 1;
         }
     }
-    
+
     std::cerr << "Run 'help' for available commands" << std::endl;
     return 1;
 }

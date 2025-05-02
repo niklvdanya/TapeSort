@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
-#include <optional>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <optional>
+#include <string>
 
 namespace tape {
 
@@ -16,17 +16,19 @@ private:
 
 public:
     Config() = default;
-    
+
     Config(int readDelay, int writeDelay, int rewindDelay, int shiftDelay) noexcept
-        : readDelay_(readDelay), writeDelay_(writeDelay), 
-          rewindDelay_(rewindDelay), shiftDelay_(shiftDelay) {}
-    
+        : readDelay_(readDelay),
+          writeDelay_(writeDelay),
+          rewindDelay_(rewindDelay),
+          shiftDelay_(shiftDelay) {}
+
     static std::optional<Config> fromFile(const std::string& filename);
-    
+
     int readDelay() const noexcept { return readDelay_; }
     int writeDelay() const noexcept { return writeDelay_; }
     int rewindDelay() const noexcept { return rewindDelay_; }
     int shiftDelay() const noexcept { return shiftDelay_; }
 };
 
-} // namespace tape
+}  // namespace tape

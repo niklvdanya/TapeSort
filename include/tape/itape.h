@@ -1,15 +1,15 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <memory>
+#include <string>
 
 namespace tape {
 
 class ITape {
 public:
     virtual ~ITape() = default;
-    
+
     virtual int32_t read() = 0;
     virtual void write(int32_t value) = 0;
     virtual void rewind() = 0;
@@ -18,4 +18,4 @@ public:
     virtual size_t getPosition() const = 0;
 };
 
-} // namespace tape
+}  // namespace tape

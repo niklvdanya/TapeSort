@@ -1,10 +1,10 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <string>
-#include <vector>
 #include <unordered_map>
-#include <functional>
+#include <vector>
 
 namespace app {
 
@@ -17,14 +17,17 @@ public:
 
 class CommandFactory {
 private:
-    std::unordered_map<std::string, std::function<std::unique_ptr<Command>(const std::vector<std::string>&)>> registry_;
-    
+    std::unordered_map<std::string,
+                       std::function<std::unique_ptr<Command>(const std::vector<std::string>&)>>
+        registry_;
+
 public:
     CommandFactory();
-    
-    std::unique_ptr<Command> createCommand(const std::string& name, const std::vector<std::string>& args);
+
+    std::unique_ptr<Command> createCommand(const std::string& name,
+                                           const std::vector<std::string>& args);
     bool isCommandRegistered(const std::string& name) const;
     std::vector<std::string> getAvailableCommands() const;
 };
 
-} // namespace app
+}  // namespace app
