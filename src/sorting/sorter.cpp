@@ -80,15 +80,12 @@ void TapeSorter::mergeChunks(const std::vector<std::string>& chunkFiles, tape::I
 
     std::priority_queue<Element, std::vector<Element>, std::greater<Element>> minHeap;
 
-    // Initialize the heap with the first element from each tape
     for (size_t i = 0; i < tapes.size(); ++i) {
         if (!tapes[i]->isEnd()) {
             minHeap.push({tapes[i]->read(), i});
             tapes[i]->moveNext();
         }
     }
-
-    // Merge the sorted chunks
     while (!minHeap.empty()) {
         auto minElement = minHeap.top();
         minHeap.pop();
