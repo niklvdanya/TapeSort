@@ -75,3 +75,14 @@ bool FileTape::moveNext() {
 bool FileTape::isEnd() const {
     return position >= tapeSize;
 }
+
+size_t FileTape::getPosition() const {
+    return position;
+}
+
+std::unique_ptr<FileTape> FileTape::createEmpty(const std::string& filename, const TapeConfig& config) {
+    std::ofstream file(filename, std::ios::binary | std::ios::trunc);
+    file.close();
+    
+    return std::make_unique<FileTape>(filename, config);
+}

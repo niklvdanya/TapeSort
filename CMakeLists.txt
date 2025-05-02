@@ -14,3 +14,7 @@ add_executable(tape_sort
 
 find_package(Threads REQUIRED)
 target_link_libraries(tape_sort PRIVATE Threads::Threads)
+
+if(CMAKE_COMPILER_IS_GNUCXX)
+    target_link_libraries(tape_sort PRIVATE stdc++fs)
+endif()

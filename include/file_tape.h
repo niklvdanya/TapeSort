@@ -23,4 +23,7 @@ public:
     void rewind() override;
     bool moveNext() override;
     bool isEnd() const override;
+    size_t getPosition() const override;
+    
+    static std::unique_ptr<FileTape> createEmpty(const std::string& filename, const TapeConfig& config);
 };
