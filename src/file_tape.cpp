@@ -26,7 +26,10 @@ FileTape::~FileTape() {
 }
 
 void FileTape::simulateDelay(int milliseconds) const {
-    std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+    if (milliseconds > 0) {
+        std::cout << "Operation delay: " << milliseconds << " ms" << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+    }
 }
 
 int32_t FileTape::read() {

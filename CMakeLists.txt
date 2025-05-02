@@ -18,3 +18,6 @@ target_link_libraries(tape_sort PRIVATE Threads::Threads)
 if(CMAKE_COMPILER_IS_GNUCXX)
     target_link_libraries(tape_sort PRIVATE stdc++fs)
 endif()
+
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tmp)
+file(COPY ${CMAKE_SOURCE_DIR}/config/tape_config.txt DESTINATION ${CMAKE_BINARY_DIR})
