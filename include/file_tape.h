@@ -10,9 +10,12 @@ private:
     std::string filename;
     size_t position = 0;
     size_t tapeSize = 0;
+    TapeConfig config;
+    
+    void simulateDelay(int milliseconds) const;
 
 public:
-    FileTape(const std::string& filename);
+    FileTape(const std::string& filename, const TapeConfig& config);
     ~FileTape() override;
     
     int32_t read() override;

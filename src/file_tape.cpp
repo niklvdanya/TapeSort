@@ -1,7 +1,11 @@
 #include "file_tape.h"
 #include <stdexcept>
+#include <iostream>
+#include <thread>
+#include <chrono>
 
-FileTape::FileTape(const std::string& filename) : filename(filename) {
+FileTape::FileTape(const std::string& filename, const TapeConfig& config) 
+    : filename(filename), config(config) {
     file.open(filename, std::ios::binary | std::ios::in | std::ios::out);
     
     if (!file.is_open()) {
@@ -21,6 +25,10 @@ FileTape::~FileTape() {
     }
 }
 
+void FileTape::simulateDelay(int milliseconds) const {
+    std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+}
+
 int32_t FileTape::read() {
     if (isEnd()) {
         throw std::runtime_error("Attempt to read past the end of tape");
@@ -30,6 +38,7 @@ int32_t FileTape::read() {
     file.seekg(position * sizeof(int32_t));
     file.read(reinterpret_cast<char*>(&value), sizeof(value));
     
+    simulateDelay(config.readDelay);
     return value;
 }
 
@@ -41,12 +50,16 @@ void FileTape::write(int32_t value) {
     if (position >= tapeSize) {
         tapeSize = position + 1;
     }
+    
+    simulateDelay(config.writeDelay);
 }
 
 void FileTape::rewind() {
     position = 0;
     file.seekg(0);
     file.seekp(0);
+    
+    simulateDelay(config.rewindDelay);
 }
 
 bool FileTape::moveNext() {
@@ -55,6 +68,7 @@ bool FileTape::moveNext() {
     }
     
     position++;
+    simulateDelay(config.shiftDelay);
     return !isEnd();
 }
 

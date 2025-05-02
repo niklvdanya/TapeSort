@@ -9,4 +9,8 @@ include_directories(include)
 add_executable(tape_sort 
     src/main.cpp
     src/file_tape.cpp
+    src/sorter.cpp
 )
+
+find_package(Threads REQUIRED)
+target_link_libraries(tape_sort PRIVATE Threads::Threads)

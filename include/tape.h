@@ -11,3 +11,10 @@ public:
     virtual bool moveNext() = 0;
     virtual bool isEnd() const = 0;
 };
+
+struct TapeConfig {
+    int readDelay = 1;
+    int writeDelay = 2;
+    int rewindDelay = 5;
+    int shiftDelay = 1;
+};
