@@ -9,6 +9,7 @@ include_directories(include)
 set(SOURCES
     src/tape/config.cpp
     src/tape/file_tape.cpp
+    src/tape/file_tape_factory.cpp
     src/sorting/sorter.cpp
     src/utils/tape_utils.cpp
     src/app/command_factory.cpp
@@ -26,5 +27,4 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tmp)
-
 file(COPY ${CMAKE_SOURCE_DIR}/config/tape_config.txt DESTINATION ${CMAKE_BINARY_DIR}/config)

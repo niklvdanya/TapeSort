@@ -1,6 +1,5 @@
 #include "tape/file_tape.h"
 #include <stdexcept>
-#include <iostream>
 #include <thread>
 #include <chrono>
 
@@ -67,7 +66,6 @@ FileTape& FileTape::operator=(FileTape&& other) noexcept {
 
 void FileTape::simulateDelay(int milliseconds) const {
     if (milliseconds > 0) {
-        std::cout << "Operation delay: " << milliseconds << " ms" << std::endl;
         std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
     }
 }

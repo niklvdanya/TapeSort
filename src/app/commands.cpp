@@ -2,9 +2,20 @@
 
 namespace app {
 
-int SortCommand::execute() {
-    if (args_.size() < 2) {
+bool BaseCommand::checkArgsCount(size_t minCount) const {
+    if (args_.size() < minCount) {
         std::cerr << "Error: Not enough arguments" << std::endl;
+        return false;
+    }
+    return true;
+}
+
+std::shared_ptr<tape::TapeFactory> SortCommand::createTapeFactory() const {
+    return std::make_shared<tape::FileTapeFactory>();
+}
+
+int SortCommand::execute() {
+    if (!checkArgsCount(2)) {
         std::cerr << getDescription() << std::endl;
         return 1;
     }
@@ -16,13 +27,13 @@ int SortCommand::execute() {
     if (args_.size() >= 3) {
         try {
             memoryLimitKB = std::stoul(args_[2]);
-        } catch (const std::exception& e) {
+        } catch (const std::exception&) {
             std::cerr << "Error: Invalid memory limit: " << args_[2] << std::endl;
             return 1;
         }
     }
     
-    std::string configFile = "tape_config.txt";
+    std::string configFile = "config/tape_config.txt";
     if (args_.size() >= 4) {
         configFile = args_[3];
     }
@@ -34,25 +45,19 @@ int SortCommand::execute() {
     }
     
     tape::Config config;
-    std::string configPath = (std::filesystem::current_path().parent_path() / "config" / configFile).string();
     
-    auto optionalConfig = tape::Config::fromFile(configPath);
+    auto optionalConfig = tape::Config::fromFile(configFile);
     if (optionalConfig) {
         config = *optionalConfig;
-        std::cout << "Loaded configuration from " << configPath << std::endl;
-    } else {
-        std::cout << "Using default configuration" << std::endl;
     }
     
     try {
-        tape::FileTape inputTape(inputFile, config);
-        tape::FileTape outputTape(outputFile, config);
+        auto tapeFactory = createTapeFactory();
+        auto inputTape = tapeFactory->createTape(inputFile, config);
+        auto outputTape = tapeFactory->createEmptyTape(outputFile, config);
         
-        sorting::TapeSorter sorter(memoryLimitKB * 1024, config, tempDir);
-        
-        std::cout << "Sorting data with memory limit: " << memoryLimitKB << " KB" << std::endl;
-        sorter.sort(inputTape, outputTape);
-        std::cout << "Sorting completed successfully!" << std::endl;
+        sorting::TapeSorter sorter(memoryLimitKB * 1024, config, tapeFactory, tempDir);
+        sorter.sort(*inputTape, *outputTape);
         
         return 0;
     } catch (const std::exception& e) {
@@ -62,8 +67,7 @@ int SortCommand::execute() {
 }
 
 int GenerateCommand::execute() {
-    if (args_.size() < 2) {
-        std::cerr << "Error: Not enough arguments" << std::endl;
+    if (!checkArgsCount(2)) {
         std::cerr << getDescription() << std::endl;
         return 1;
     }
@@ -73,7 +77,7 @@ int GenerateCommand::execute() {
     
     try {
         count = std::stoul(args_[1]);
-    } catch (const std::exception& e) {
+    } catch (const std::exception&) {
         std::cerr << "Error: Invalid count: " << args_[1] << std::endl;
         return 1;
     }
@@ -88,8 +92,7 @@ int GenerateCommand::execute() {
 }
 
 int PrintCommand::execute() {
-    if (args_.empty()) {
-        std::cerr << "Error: Not enough arguments" << std::endl;
+    if (!checkArgsCount(1)) {
         std::cerr << getDescription() << std::endl;
         return 1;
     }
@@ -100,7 +103,7 @@ int PrintCommand::execute() {
     if (args_.size() >= 2) {
         try {
             maxElements = std::stoul(args_[1]);
-        } catch (const std::exception& e) {
+        } catch (const std::exception&) {
             std::cerr << "Error: Invalid max_elements: " << args_[1] << std::endl;
             return 1;
         }
@@ -116,8 +119,7 @@ int PrintCommand::execute() {
 }
 
 int ValidateCommand::execute() {
-    if (args_.empty()) {
-        std::cerr << "Error: Not enough arguments" << std::endl;
+    if (!checkArgsCount(1)) {
         std::cerr << getDescription() << std::endl;
         return 1;
     }
@@ -134,8 +136,7 @@ int ValidateCommand::execute() {
 }
 
 int HelpCommand::execute() {
-    std::cout << "Tape Sort - Utility for sorting data with limited memory" << std::endl;
-    std::cout << "Commands:" << std::endl;
+    std::cout << "Tape Sort - Commands:" << std::endl;
     
     CommandFactory factory;
     for (const auto& cmd : factory.getAvailableCommands()) {

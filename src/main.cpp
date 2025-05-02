@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <set>
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -10,36 +11,36 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     
-    std::string commandName = argv[1];
-    
-    std::vector<std::string> args;
-    for (int i = 2; i < argc; ++i) {
-        args.push_back(argv[i]);
-    }
-    
     app::CommandFactory factory;
+    std::string commandName = argv[1];
+    std::vector<std::string> args;
     
-    if (factory.isCommandRegistered(commandName)) {
-        auto command = factory.createCommand(commandName, args);
-        if (command) {
-            try {
-                return command->execute();
-            } catch (const std::exception& e) {
-                std::cerr << "Error: " << e.what() << std::endl;
-                return 1;
-            }
+    static const std::set<std::string> validCommands = {
+        "sort", "generate", "print", "validate", "help"
+    };
+
+    if (validCommands.find(commandName) == validCommands.end()) {
+        args.push_back(commandName); 
+        for (int i = 2; i < argc; ++i) {
+            args.push_back(argv[i]);
+        }
+        commandName = "sort"; 
+    } else {
+        for (int i = 2; i < argc; ++i) {
+            args.push_back(argv[i]);
         }
     }
     
-    if (commandName != "help") {
-        std::cerr << "Unknown command: " << commandName << std::endl;
-        std::cerr << "Run 'help' for available commands" << std::endl;
+    auto command = factory.createCommand(commandName, args);
+    if (command) {
+        try {
+            return command->execute();
+        } catch (const std::exception& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            return 1;
+        }
     }
     
-    auto helpCommand = factory.createCommand("help", {});
-    if (helpCommand) {
-        return helpCommand->execute();
-    }
-    
+    std::cerr << "Run 'help' for available commands" << std::endl;
     return 1;
 }

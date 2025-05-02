@@ -3,6 +3,7 @@
 #include "app/command_factory.h"
 #include "tape/config.h"
 #include "tape/file_tape.h"
+#include "tape/file_tape_factory.h"
 #include "sorting/sorter.h"
 #include "utils/tape_utils.h"
 #include <string>
@@ -11,15 +12,26 @@
 #include <iostream>
 #include <stdexcept>
 #include <optional>
+#include <memory>
 
 namespace app {
 
-class SortCommand : public Command {
-private:
+class BaseCommand : public Command {
+protected:
     std::vector<std::string> args_;
     
+    bool checkArgsCount(size_t minCount) const;
+    
 public:
-    explicit SortCommand(std::vector<std::string> args) : args_(std::move(args)) {}
+    explicit BaseCommand(std::vector<std::string> args) : args_(std::move(args)) {}
+};
+
+class SortCommand : public BaseCommand {
+private:
+    std::shared_ptr<tape::TapeFactory> createTapeFactory() const;
+    
+public:
+    explicit SortCommand(std::vector<std::string> args) : BaseCommand(std::move(args)) {}
     
     int execute() override;
     
@@ -28,12 +40,9 @@ public:
     }
 };
 
-class GenerateCommand : public Command {
-private:
-    std::vector<std::string> args_;
-    
+class GenerateCommand : public BaseCommand {
 public:
-    explicit GenerateCommand(std::vector<std::string> args) : args_(std::move(args)) {}
+    explicit GenerateCommand(std::vector<std::string> args) : BaseCommand(std::move(args)) {}
     
     int execute() override;
     
@@ -42,12 +51,9 @@ public:
     }
 };
 
-class PrintCommand : public Command {
-private:
-    std::vector<std::string> args_;
-    
+class PrintCommand : public BaseCommand {
 public:
-    explicit PrintCommand(std::vector<std::string> args) : args_(std::move(args)) {}
+    explicit PrintCommand(std::vector<std::string> args) : BaseCommand(std::move(args)) {}
     
     int execute() override;
     
@@ -56,12 +62,9 @@ public:
     }
 };
 
-class ValidateCommand : public Command {
-private:
-    std::vector<std::string> args_;
-    
+class ValidateCommand : public BaseCommand {
 public:
-    explicit ValidateCommand(std::vector<std::string> args) : args_(std::move(args)) {}
+    explicit ValidateCommand(std::vector<std::string> args) : BaseCommand(std::move(args)) {}
     
     int execute() override;
     
@@ -70,12 +73,9 @@ public:
     }
 };
 
-class HelpCommand : public Command {
-private:
-    std::vector<std::string> args_;
-    
+class HelpCommand : public BaseCommand {
 public:
-    explicit HelpCommand(std::vector<std::string> args) : args_(std::move(args)) {}
+    explicit HelpCommand(std::vector<std::string> args) : BaseCommand(std::move(args)) {}
     
     int execute() override;
     

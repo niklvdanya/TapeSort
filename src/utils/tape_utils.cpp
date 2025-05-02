@@ -3,7 +3,7 @@
 namespace utils {
 
 void TapeUtils::generateRandomTape(const std::string& filename, size_t count, 
-                                   int32_t minValue, int32_t maxValue) {
+                                int32_t minValue, int32_t maxValue) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<int32_t> dist(minValue, maxValue);
@@ -13,19 +13,12 @@ void TapeUtils::generateRandomTape(const std::string& filename, size_t count,
         throw std::runtime_error("Failed to open file for writing: " + filename);
     }
     
-    std::cout << "Generating " << count << " random elements..." << std::endl;
-    
     for (size_t i = 0; i < count; ++i) {
         int32_t value = dist(gen);
         file.write(reinterpret_cast<const char*>(&value), sizeof(value));
-        
-        if (i > 0 && i % (count / 10) == 0) {
-            std::cout << "Generated " << i << " of " << count << " elements" << std::endl;
-        }
     }
     
     file.close();
-    std::cout << "Done generating random data" << std::endl;
 }
 
 void TapeUtils::printTapeContent(const std::string& filename, size_t maxElements) {
@@ -40,7 +33,7 @@ void TapeUtils::printTapeContent(const std::string& filename, size_t maxElements
     
     size_t numElements = fileSize / sizeof(int32_t);
     
-    std::cout << "File contains " << numElements << " elements" << std::endl;
+    std::cout << "Elements: " << numElements << std::endl;
     
     size_t elementsToShow = std::min(numElements, maxElements);
     std::vector<int32_t> data(elementsToShow);
@@ -76,13 +69,10 @@ bool TapeUtils::validateSorted(const std::string& filename) {
     file.seekg(0, std::ios::beg);
     
     if (fileSize == 0) {
-        std::cout << "File is empty" << std::endl;
         return true;
     }
     
     size_t numElements = fileSize / sizeof(int32_t);
-    
-    std::cout << "Validating " << numElements << " elements..." << std::endl;
     
     int32_t prev, curr;
     file.read(reinterpret_cast<char*>(&prev), sizeof(prev));
@@ -104,10 +94,8 @@ bool TapeUtils::validateSorted(const std::string& filename) {
         prev = curr;
     }
     
-    if (isSorted) {
-        std::cout << "Validation successful: File is properly sorted" << std::endl;
-    } else {
-        std::cout << "Validation failed: Found " << errorsFound << " errors" << std::endl;
+    if (!isSorted) {
+        std::cout << "Found " << errorsFound << " errors" << std::endl;
     }
     
     return isSorted;
